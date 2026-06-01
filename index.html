@@ -1,0 +1,618 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="把公开信息转化为可验证的销售判断、开场话术和拜访问题。">
+  <title>ToB 客户拜访 AI 背调 | Hermes Skill</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d6dde5;
+      --paper: #f7f9fb;
+      --surface: #ffffff;
+      --accent: #0f766e;
+      --accent-ink: #063c38;
+      --code: #101828;
+      --code-bg: #eef3f7;
+      --warn: #8a4b0f;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      line-height: 1.65;
+    }
+    a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+    header {
+      background: linear-gradient(180deg, #ffffff 0%, #eef6f4 100%);
+      border-bottom: 1px solid var(--line);
+    }
+    .hero, main, footer {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 240px;
+      gap: 32px;
+      align-items: end;
+      padding: 44px 0 28px;
+    }
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent-ink);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    .summary {
+      max-width: 760px;
+      margin: 18px 0 0;
+      color: #344054;
+      font-size: 19px;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .button.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #ffffff;
+    }
+    .qr-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+    }
+    .qr-panel img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .qr-panel p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+    main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 260px;
+      gap: 28px;
+      padding: 28px 0 48px;
+    }
+    article, aside {
+      min-width: 0;
+    }
+    aside {
+      align-self: start;
+      position: sticky;
+      top: 20px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 16px;
+    }
+    aside h2 {
+      margin: 0 0 10px;
+      font-size: 17px;
+    }
+    aside dl, aside dd, aside dt { margin: 0; }
+    aside dt {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 12px;
+      text-transform: uppercase;
+    }
+    aside dd {
+      color: var(--ink);
+      overflow-wrap: anywhere;
+    }
+    .notice {
+      border-left: 4px solid var(--accent);
+      background: #eef6f4;
+      padding: 12px 14px;
+      margin-bottom: 18px;
+      color: var(--accent-ink);
+    }
+    section.content {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: clamp(18px, 3vw, 34px);
+      margin-bottom: 22px;
+    }
+    h2, h3, h4, h5 {
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0 0 18px;
+      font-size: 28px;
+    }
+    h3 {
+      margin: 30px 0 12px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h4 {
+      margin: 24px 0 10px;
+      font-size: 18px;
+    }
+    p, ul, ol, blockquote, .table-wrap, pre {
+      margin: 12px 0;
+    }
+    ul, ol { padding-left: 1.35rem; }
+    li + li { margin-top: 4px; }
+    code {
+      border-radius: 4px;
+      background: var(--code-bg);
+      padding: 0.1rem 0.28rem;
+      color: var(--code);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.92em;
+    }
+    pre.code {
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #101828;
+      color: #f9fafb;
+      padding: 16px;
+      line-height: 1.5;
+    }
+    pre.code code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      white-space: pre;
+    }
+    blockquote {
+      border-left: 4px solid #b9c9d6;
+      margin-left: 0;
+      padding: 8px 14px;
+      color: #344054;
+      background: #f3f6f9;
+    }
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f7;
+      color: #263344;
+    }
+    tr:last-child td { border-bottom: 0; }
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 18px 0 34px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    @media (max-width: 860px) {
+      .hero, main {
+        grid-template-columns: 1fr;
+      }
+      .qr-panel {
+        width: min(220px, 100%);
+      }
+      aside {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div>
+        <p class="eyebrow">Hermes Skill Share</p>
+        <h1>ToB 客户拜访 AI 背调</h1>
+        <p class="summary">把公开信息转化为可验证的销售判断、开场话术和拜访问题。</p>
+        <div class="actions">
+          <a class="button primary" href="#skill">阅读 Skill 内容</a>
+          <a class="button" href="SKILL.md" download>下载 SKILL.md</a>
+          <a class="button" href="references/chinese-company-lookup-tactics.md" download>下载参考资料</a>
+        </div>
+      </div>
+      <div class="qr-panel">
+        <img src="qr.svg" alt="分享二维码">
+        <p>扫码打开：https://sejourleo.github.io/cddforogsales/</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <article>
+      <div class="notice">分享说明：这个页面保留了原始 skill 内容和参考资料，适合发给同事、客户成功团队或销售团队扫码查看。</div>
+      <section class="content" id="skill">
+        <h2>ToB 客户拜访 AI 背调</h2>
+<h3>Overview</h3>
+<p>这个 skill 用来在拜访大客户、KA 客户、渠道客户或潜在客户前，快速把公开信息转化成<strong>可验证的销售判断</strong>。</p>
+<p>核心原则：背调不是收集信息，也不是尽调；背调的目标是形成一组假设，让销售在第一次见面时能说对第一句话，并设计出高质量验证问题。</p>
+<p>默认产出不是“百度百科式公司介绍”，而是一页可用于拜访前准备的报告：</p>
+<ul>
+<li>这家公司大概处在什么阶段？</li>
+<li>所在行业最近发生了什么变化？</li>
+<li>如果采购我们的产品，决策链可能怎么走？</li>
+<li>对接人可能关心什么 KPI？</li>
+<li>我们应该从哪个角度切入？</li>
+<li>哪些信息是事实，哪些只是推测，见面时该怎么验证？</li>
+</ul>
+<h3>When to Use</h3>
+<p>使用场景：</p>
+<ul>
+<li>用户说“帮我做某客户背调 / 客户拜访准备 / 大客户拜访准备 / 销售拜访准备”。</li>
+<li>用户给出公司名、联系人、职位、行业、会议目标，想要一份拜访前报告。</li>
+<li>用户想为首次见面、售前 discovery call、渠道拜访、BD 约谈准备破冰话术。</li>
+<li>用户想把公司公开资料转成“痛点假设 + 第一句话 + 验证问题”。</li>
+</ul>
+<p>不要用于：</p>
+<ul>
+<li>法务、投融资、并购等正式尽调。</li>
+<li>非公开个人隐私调查。</li>
+<li>把未经验证的 AI 推测包装成事实。</li>
+</ul>
+<h3>Minimum Inputs</h3>
+<p>尽量从用户提供的信息直接开始；不要为了完美信息反复追问。</p>
+<p>最低输入：</p>
+<ul>
+<li>客户公司名。</li>
+<li>用户要销售/推荐的产品或方案。</li>
+</ul>
+<p>有则更好：</p>
+<ul>
+<li>行业或业务线。</li>
+<li>对接人姓名、职位、部门。</li>
+<li>会议目标：初次拜访、复盘、推进预算、技术交流、方案汇报等。</li>
+<li>已知线索：中间人评价、客户最近动作、官网/新闻链接、用户自己的判断。</li>
+</ul>
+<p>如果用户没有说明自己的产品/方案，且上下文没有其它说明，默认使用 Yves 的出海 AI/IT 解决方案组合：GEO/生成式引擎优化、AI API 转售、企业谷歌开户（Google Workspace/Google Ads/域名邮箱/权限与安全基线）、ICT 出海硬件、NaaS/SD-WAN/SASE。</p>
+<p><strong>OgCloud 主业限定规则：</strong>如果用户明确说“只针对我的主业 OgCloud / 只做 OgCloud 相关推荐 / 不要贯灵业务”，则必须收窄到 OgCloud 产品范围：SD-WAN 加速、SD-WAN 组网、IDC、大带宽+DDoS、MSP、网络安全、SASE 零信任解决方案。不要混入 GEO、AI API 转售、RAG/企业知识库、企业谷歌开户等贯灵或个人业务；除非客户公开信息强烈显示出海需求，也只作为“待验证问题”，不要作为主推。</p>
+<h3>Research Rules</h3>
+<p>For Chinese private-company/prospect lookup, use the tactical checklist in <code>references/chinese-company-lookup-tactics.md</code> when registry sites are sparse, anti-bot protected, the company appears newly established, or the official site is a modern Nuxt/Vue app whose visible HTML is thin (the reference includes a JSONP/API-route extraction pattern for such sites).</p>
+<ol>
+<li><strong>只使用公开信息</strong>：官网、新闻稿、招聘、公开演讲、公众号、招股书、年报、工商摘要、行业报告等。</li>
+<li><strong>区分三类内容</strong>：</li>
+</ol>
+<ul>
+<li>已验证事实：有来源或用户提供。</li>
+<li>合理推测：基于行业/角色/公司阶段推断。</li>
+<li>待验证问题：见面时要问客户确认。</li>
+</ul>
+<ol>
+<li><strong>人物信息高风险</strong>：联系人履历、观点、前任公司、公开发言必须标注来源；查不到就写“公开信息不足”，不要补全。</li>
+<li><strong>时效性强的信息要复核</strong>：融资、并购、高管变动、业务调整、政策变化、重大客户签约等，必须看时间。</li>
+<li><strong>不要断言客户内部情况</strong>：痛点、预算、决策链都用“我猜 / 可能 / 值得验证”的口吻。</li>
+<li><strong>目标是生成销售动作</strong>：每个判断都要能落到一句开场话术、一个验证问题、或一个下一步动作。</li>
+</ol>
+<h3>10 分钟背调 SOP</h3>
+<h4>Step 1：公司基本面 → 建立整体画像</h4>
+<p>目标：快速建立对客户的“体感”，不是罗列工商信息。</p>
+<p>关注：</p>
+<ul>
+<li>主营业务和商业模式。</li>
+<li>客户类型、收入来源、核心产品/服务。</li>
+<li>当前规模量级：营收、人数、融资阶段、区域布局、客户群。</li>
+<li>最近 1-2 年重大变化：融资、并购、业务调整、高管变动、出海、组织扩张/收缩。</li>
+</ul>
+<p>判断句模板：</p>
+<blockquote>这家公司不是单纯的 [表面分类]，更像是一家处在 [阶段] 的 [业务本质] 公司；最近的关键变化是 [变化]，这可能意味着 [销售相关含义]。</blockquote>
+<h4>Step 2：行业痛点和趋势 → 准备“抛判断”的弹药</h4>
+<p>目标：让客户感觉你不是只查了他家公司，而是懂他的行业语境。</p>
+<p>关注：</p>
+<ul>
+<li>最近一年政策/监管变化。</li>
+<li>技术趋势和替代路径。</li>
+<li>竞争格局变化。</li>
+<li>成本、效率、增长、合规、出海、数据、安全等业务压力。</li>
+<li>这些变化对业务负责人意味着什么。</li>
+</ul>
+<p>输出要从业务决策者视角写，不要陷入技术名词堆砌。</p>
+<h4>Step 3：决策链猜测 → 知道该问什么</h4>
+<p>目标：预测采购相关角色和预算路径，帮助销售设计探询问题。</p>
+<p>关注：</p>
+<ul>
+<li>使用部门、需求发起人、技术评估人、采购/法务/财务、最终拍板人。</li>
+<li>预算来自哪里：业务预算、IT 预算、市场预算、专项项目预算、总部预算。</li>
+<li>常见阻力：ROI 不清、集成成本、合规安全、内部资源不足、老板优先级不够。</li>
+</ul>
+<p>注意：这是行业通用推测，不是该公司的内部事实。</p>
+<h4>Step 4：对接人画像 → 判断对方可能关心什么</h4>
+<p>目标：理解对接人的角色目标和 KPI，而不是八卦个人隐私。</p>
+<p>关注：</p>
+<ul>
+<li>公开可验证的职业背景。</li>
+<li>公开发言、文章、采访、社交资料。</li>
+<li>当前职位对应的 KPI：增长、降本、效率、合规、安全、交付、团队管理等。</li>
+<li>这个人可能喜欢什么沟通方式：战略视角、数据证据、落地案例、风险控制、快速试点。</li>
+</ul>
+<p>如果公开信息不足，直接写：</p>
+<blockquote>公开信息不足，不能可靠判断其个人履历；以下只基于其职位角色推测可能关注点。</blockquote>
+<h4>Step 5：切入点预判 → 设计第一句话</h4>
+<p>目标：形成一个能被客户纠正的具体判断。</p>
+<p>好的开场不是“我看到贵司成立于 2018 年”，而是：</p>
+<blockquote>我注意到你们最近在 [业务变化/行业趋势]，我猜现在比较棘手的可能不是 [表层问题]，而是 [更深层问题]。这个判断不一定准，我想先听听你们实际情况。</blockquote>
+<h3>Output Format</h3>
+<p>每次使用本 skill，默认输出以下结构，保持一页到两页，不要写成长篇百科。</p>
+<pre class="code" data-lang="markdown"><code># [客户公司] 拜访前 AI 背调报告
+
+## 0. 结论先行
+- 客户当前可能处在：...
+- 最值得验证的痛点假设：...
+- 建议第一句话：...
+- 本次拜访优先目标：...
+
+## 1. 公司基本面
+| 维度 | 判断 | 依据/来源 | 置信度 |
+|---|---|---|---|
+| 主营业务 | ... | ... | 高/中/低 |
+| 商业模式 | ... | ... | ... |
+| 规模阶段 | ... | ... | ... |
+| 近期变化 | ... | ... | ... |
+
+## 2. 行业趋势与业务压力
+- 趋势 1：... → 对客户的影响：...
+- 趋势 2：... → 对客户的影响：...
+- 适合见面抛出的判断：...
+
+## 3. 决策链假设
+| 角色 | 可能关心 | 可能反对点 | 应该问的问题 |
+|---|---|---|---|
+| 业务负责人 | ... | ... | ... |
+| IT/技术负责人 | ... | ... | ... |
+| 财务/采购 | ... | ... | ... |
+| CEO/老板 | ... | ... | ... |
+
+## 4. 对接人画像
+- 公开事实：...
+- 角色推测：...
+- 可能 KPI：...
+- 沟通建议：...
+- 风险提示：人物信息是否已交叉验证？
+
+## 5. 产品切入点
+- 客户可能痛点：...
+- 我们能解决的具体问题：...
+- 不建议先讲：...
+- 建议先讲：...
+
+## 6. 开场话术
+&gt; 我注意到 ...，我猜 ...。这个判断不一定准，想先听听你们实际情况。
+
+## 7. 5 个验证问题
+1. ...
+2. ...
+3. ...
+4. ...
+5. ...
+
+## 8. 下一步动作
+- 会前还要确认：...
+- 会中要拿到：...
+- 会后跟进材料：...
+
+## 9. 信息边界
+- 已验证事实：...
+- 合理推测：...
+- 高风险/需验证：...</code></pre>
+<h3>Prompt Pack</h3>
+<p>以下是文章中沉淀出的 5 个核心 prompt，可单独使用，也可以作为报告生成链条。</p>
+<h4>1. 公司基本面</h4>
+<pre class="code" data-lang="text"><code>请帮我分析[公司名]这家公司。我需要了解：
+1）他们的主营业务和商业模式是什么；
+2）目前的规模大概在什么量级（营收/人数/融资阶段）；
+3）最近 1-2 年有没有什么重大变化（融资、并购、业务调整、高管变动）。
+请用简洁的语言概括，不要罗列工商信息。</code></pre>
+<h4>2. 行业痛点和趋势</h4>
+<pre class="code" data-lang="text"><code>[公司名]所在的[行业]，最近一年有哪些重要的政策变化、技术趋势或竞争格局变化？
+这些变化可能给这类企业带来什么挑战或机会？
+请从业务决策者的视角来分析，不要太技术化。</code></pre>
+<h4>3. 决策链猜测</h4>
+<pre class="code" data-lang="text"><code>像[公司名]这种规模的[行业]企业，如果要采购[你的产品类型]，通常的决策链条是什么样的？
+可能涉及哪些角色（IT 负责人/业务负责人/财务/CEO）？
+最终拍板的通常是谁？预算审批一般走什么流程？</code></pre>
+<h4>4. 对接人画像</h4>
+<pre class="code" data-lang="text"><code>请帮我了解[人名]，他目前是[公司名]的[职位]。
+我想知道：
+1）他的职业背景和履历；
+2）他公开发表过什么观点或文章；
+3）基于他的角色，他最可能关心什么 KPI 或业务指标？
+请基于公开信息分析，如果信息有限请明确告诉我。</code></pre>
+<h4>5. 切入点预判</h4>
+<pre class="code" data-lang="text"><code>基于以上分析，我是一家[你的公司简介]的销售。
+我们的产品主要解决[核心价值]。
+请帮我判断：
+1）这家客户最可能的痛点是什么；
+2）我的产品能帮他解决什么具体问题；
+3）见面时我应该从什么角度切入话题，才能让对方觉得我懂他。</code></pre>
+<h3>One-Shot Master Prompt</h3>
+<p>当用户想复制到其它 AI 工具里，可以给这个整合版：</p>
+<pre class="code" data-lang="text"><code>你是一名资深 ToB 大客户销售顾问。请基于公开信息和合理行业判断，帮我为一次客户拜访做会前背调。
+
+已知信息：
+- 客户公司：[公司名]
+- 所属行业：[行业]
+- 对接人：[姓名/职位，如未知写未知]
+- 我方公司/方案：[你的公司简介]
+- 我方核心价值：[核心价值]
+- 拜访目标：[初次拜访/需求挖掘/推进预算/方案汇报等]
+
+请输出：
+1. 公司基本面：主营业务、商业模式、规模阶段、最近 1-2 年重大变化。不要罗列工商信息。
+2. 行业痛点和趋势：最近一年政策、技术、竞争格局变化，以及对业务决策者的影响。
+3. 决策链猜测：如果采购我方方案，通常涉及哪些角色、谁可能拍板、预算审批可能怎么走。
+4. 对接人画像：只基于公开信息分析其履历、观点、可能 KPI；信息不足请明确说明，不要编造。
+5. 切入点预判：客户最可能的痛点、我方能解决的具体问题、见面时建议从哪个角度切入。
+6. 开场第一句话：用“我注意到...我猜...这个判断不一定准，想听听你们实际情况”的形式写 2-3 个版本。
+7. 5 个验证问题：用于会中验证你的判断。
+8. 信息边界：把内容分为“已验证事实 / 合理推测 / 待验证问题”。
+
+要求：
+- 不要写百科式介绍。
+- 不要把推测说成事实。
+- 对人物信息尤其谨慎；没有可靠公开来源就写信息不足。
+- 输出要简洁、可用于销售拜访。</code></pre>
+<h3>Opening-Line Patterns</h3>
+<h4>趋势切入</h4>
+<blockquote>我注意到最近 [行业变化] 对 [客户类型] 影响挺大，我猜你们现在可能也在看 [具体问题]。这个判断不一定准，想听听你们实际情况。</blockquote>
+<h4>组织变化切入</h4>
+<blockquote>我看到你们最近在 [融资/出海/扩张/平台化/组织调整]，我猜现在最难的可能不是 [表层问题]，而是 [底层问题]。</blockquote>
+<h4>KPI 切入</h4>
+<blockquote>按您这个角色，我猜今年更核心的指标可能是 [KPI]，所以我今天不想先讲产品功能，想先确认一个问题：[验证问题]。</blockquote>
+<h4>风险切入</h4>
+<blockquote>很多 [行业] 企业做到这个阶段后，都会遇到 [风险/瓶颈]。我不确定你们是不是也类似，所以想先验证一下。</blockquote>
+<h3>Common Pitfalls</h3>
+<ol>
+<li><strong>把 AI 输出当事实。</strong> 正确做法是把输出当假设，用于会中验证。</li>
+<li><strong>人物信息幻觉。</strong> AI 很容易编造联系人履历、前公司、观点。没有来源就不要在会中提。</li>
+<li><strong>信息过期。</strong> 融资、高管、业务调整、政策变化要看时间。</li>
+<li><strong>开场太装。</strong> 不要说“我知道你们现在最大问题是...”，要说“我猜...不一定准”。</li>
+<li><strong>堆行业术语。</strong> 客户买的是业务结果，不是术语密度。</li>
+<li><strong>只查客户，不映射我方价值。</strong> 每个痛点假设都必须连接到我方能帮什么，以及下一步怎么验证。</li>
+<li><strong>过度私人化。</strong> 对接人画像只用于理解角色目标，不做隐私窥探。</li>
+</ol>
+<h3>Verification Checklist</h3>
+<ul>
+<li>[ ] 公司名、行业、拜访目标明确。</li>
+<li>[ ] 我方产品/方案和核心价值明确；未提供时已使用默认 Yves 出海 AI/IT 方案。</li>
+<li>[ ] 报告里区分了“事实 / 推测 / 待验证”。</li>
+<li>[ ] 人物信息没有无来源断言。</li>
+<li>[ ] 近期变化标注了时间或来源。</li>
+<li>[ ] 至少有 1 条具体开场话术。</li>
+<li>[ ] 至少有 5 个会中验证问题。</li>
+<li>[ ] 结论能支持下一步销售动作，而不是停留在信息介绍。</li>
+</ul>
+<h3>Source</h3>
+<p>沉淀自微信公众号文章： 《拜访大客户前，我用AI做了一份背调报告（附完整prompt）》 公众号：一个爱打高尔夫的ToB销售 作者：高尔夫ToB销售 发布时间：2026-05-20 原文链接：https://mp.weixin.qq.com/s/D4qsb8kjzryDbm-TViSJHw</p>
+      </section>
+      <section class="content" id="reference">
+        <h2>参考资料：中文企业查询策略</h2>
+        <h2>Chinese ToB Customer Lookup Tactics</h2>
+<p>Use this reference when a customer background check involves a small/private Chinese company with sparse official marketing footprint.</p>
+<h3>Search sequence</h3>
+<ol>
+<li>Start broad with exact company name in quotes and variants with/without Chinese parentheses:</li>
+</ol>
+<ul>
+<li><code>&quot;中发国兴（杭州）人工智能科技有限公司&quot;</code></li>
+<li><code>&quot;中发国兴(杭州)人工智能科技有限公司&quot;</code></li>
+<li><code>&quot;中发国兴&quot; &quot;杭州&quot; &quot;人工智能&quot;</code></li>
+</ul>
+<ol>
+<li>Use DuckDuckGo/Bing-style result pages to discover stable URLs, but do not trust snippets alone.</li>
+<li>Prefer public registry pages that render SEO HTML:</li>
+</ol>
+<ul>
+<li>爱企查 <code>company_shares_&lt;pid&gt;</code> often exposes header facts + shareholder table even when <code>company_detail_&lt;pid&gt;</code> redirects to anti-bot/captcha.</li>
+<li>爱企查 <code>company_annual_&lt;pid&gt;</code> often exposes annual-report index and company header facts.</li>
+<li>QCC may return WAF/anti-bot payloads; treat it as discovery unless content is readable.</li>
+</ul>
+<ol>
+<li>Extract not only the target company but also controlling shareholder / parent company PIDs. A new local subsidiary often makes sense only through the parent.</li>
+<li>Search for exact names excluding registry sites to detect real operating footprint:</li>
+</ol>
+<ul>
+<li><code>&quot;公司全称&quot; -企查查 -爱企查</code></li>
+<li><code>公司简称 官网</code></li>
+<li><code>公司简称 招聘</code></li>
+<li><code>法人名 公司简称</code></li>
+</ul>
+<ol>
+<li>Cross-check industry context separately from company facts: local government policy, industry association/news, and subsidy notices are useful for pain hypotheses but should not be presented as company-specific facts.</li>
+<li>For Nuxt/Vue company sites with sparse rendered HTML, inspect bundled JS for API bases and routes:</li>
+</ol>
+<ul>
+<li>Fetch homepage, list <code>/_nuxt/*.js</code> scripts, then search bundles for strings like <code>/f/</code>, <code>baseURL</code>, <code>jsonp</code>, <code>tCase</code>, <code>contact</code>, <code>position</code>, <code>projecttype</code>.</li>
+<li>Many Chinese SME sites expose JSONP endpoints directly (example pattern: <code>http://site/gw-ht/f/...</code> returning <code>null([...])</code>). Strip the JSONP wrapper and parse JSON.</li>
+<li>Useful endpoints often include company/about text, project categories, case lists/details, contact locations, and open positions; these are high-signal for sales hypotheses.</li>
+<li>Treat old case/position timestamps as historical capability signals, not proof of current active hiring or current product focus.</li>
+</ul>
+<h3>Useful fields to capture</h3>
+<ul>
+<li>Company status, incorporation/registration time, registered capital, legal representative, address, official website presence.</li>
+<li>Shareholder table: shareholder name, holding ratio, subscribed capital, actual paid capital if shown.</li>
+<li>Parent company: incorporation date, registered capital, legal representative, address, shareholders.</li>
+<li>Risk counts if shown, but caveat strongly for new companies: low/no risk can simply mean insufficient operating history.</li>
+<li>Whether independent website, recruiting, product pages, news, patents/software copyrights, or customer cases are publicly visible.</li>
+</ul>
+<h3>Interpretation pattern</h3>
+<p>For a newly established subsidiary, frame the sales hypothesis as:</p>
+<blockquote>This may be a regional/project/business-carrier entity under an older parent, not yet a mature standalone operating company. The meeting should first verify why this entity was created, where decision rights sit, and whether budget comes from the subsidiary or parent.</blockquote>
+<h3>Pitfalls</h3>
+<ul>
+<li>Do not infer mature product lines from an AI-themed company name alone.</li>
+<li>Do not treat DBC/top-list/news mentions as proof of the target company unless the exact target name appears.</li>
+<li>Do not over-personalize legal-representative research; if public material is only registry-level, say personal profile information is insufficient.</li>
+<li>Do not lead with a fixed product pitch. For early/new entities, first validate: strategic purpose, team, customer stage, project/budget ownership, and near-term business direction.</li>
+</ul>
+      </section>
+    </article>
+    <aside aria-label="Skill metadata">
+      <h2>Skill 信息</h2>
+      <dl>
+        <dt>Name</dt>
+        <dd>tob-customer-background-check</dd>
+        <dt>Version</dt>
+        <dd>1.0.0</dd>
+        <dt>Author</dt>
+        <dd>Hermes Agent + Yves</dd>
+        <dt>License</dt>
+        <dd>MIT</dd>
+        <dt>Source</dt>
+        <dd><a href="SKILL.md">SKILL.md</a></dd>
+        <dt>Reference</dt>
+        <dd><a href="references/chinese-company-lookup-tactics.md">chinese-company-lookup-tactics.md</a></dd>
+      </dl>
+    </aside>
+  </main>
+  <footer>
+    <p>Generated for sharing. If this directory is moved to a public host, regenerate <code>qr.svg</code> with the final URL.</p>
+  </footer>
+</body>
+</html>
