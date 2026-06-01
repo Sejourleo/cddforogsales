@@ -26,4 +26,4 @@ pip install "qrcode[pil]>=7.4,<8" "pillow>=10,<12"
 python build_share.py --url https://sejourleo.github.io/cddforogsales/
 ```
 
-GitHub Pages 会通过 `.github/workflows/pages.yml` 自动发布。
+GitHub Pages 已配置为从 `main` 分支根目录发布。
